@@ -36,6 +36,17 @@ class YoutubeDownloader:
             download_frame, text='Download video', command=lambda: self.download_video(url_entry.get())
         ).grid(row=4, column=1)
 
+        ttk.Separator(download_frame).grid(row=6, columnspan=2, pady=10, sticky='we')
+
+        message_frame = ttk.Frame(download_frame)
+        message_frame.grid(row=7, columnspan=2)
+        message_scroll = ttk.Scrollbar(message_frame)
+        message_scroll.pack(side='right', fill='y')
+
+        message_field = tk.Text(message_frame, width=50, height=20, yscrollcommand=message_scroll.set)
+        message_field.pack()
+        message_scroll.config(command=message_field.yview)
+
     def download_video(self, url):
         print(url)
 
