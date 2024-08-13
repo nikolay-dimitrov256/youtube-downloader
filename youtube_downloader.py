@@ -3,11 +3,14 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Optional
 
-from loaders import BookmarkLoader
+from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
 
 
 class YoutubeDownloader:
-    supported_browsers = ['Mozilla Firefox', 'Google Chrome']
+    supported_browsers = {
+        'Mozilla Firefox': FirefoxLoader,
+        'Google Chrome': ChromeLoader,
+    }
 
     def __init__(self):
         self.settings = self.load_settings()
@@ -77,7 +80,7 @@ class YoutubeDownloader:
     def render_settings_tab(self, settings_frame: ttk.Frame):
         # message_entry = ttk.Entry(settings_frame, state=tk.DISABLED)
         # message_entry.grid(row=0, column=0, padx=5, pady=5, sticky='w')
-        #self.output_entry_message(message_entry, 'Chose a browser', 'green')
+        # self.output_entry_message(message_entry, 'Chose a browser', 'green')
 
         ttk.Label(settings_frame, text='Chose a browser: ').grid(row=2, column=0, padx=5, pady=5, sticky='w')
         current_browser = tk.StringVar()
@@ -85,7 +88,7 @@ class YoutubeDownloader:
             settings_frame,
             textvariable=current_browser,
             width=30,
-            values=self.supported_browsers
+            values=list(self.supported_browsers.keys())
         )
         select_browser_dropdown.grid(row=2, column=1, pady=5, sticky='w')
 
@@ -104,7 +107,7 @@ class YoutubeDownloader:
     def select_path_to_bookmarks(self, browser: str):
         if browser not in self.supported_browsers:
             return
-        
+
         path = filedialog.askdirectory()
         self.settings[browser] = path
 
@@ -114,7 +117,6 @@ class YoutubeDownloader:
         entry.insert(0, message)
         entry['foreground'] = color
         entry['state'] = tk.DISABLED
-
 
     def download_video(self, url):
         print(url)
