@@ -1,8 +1,9 @@
 import json
 import tkinter as tk
 from tkinter import ttk, filedialog
-from typing import Optional
+from typing import Optional, List
 
+from bookmark import Bookmark
 from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
 
 
@@ -15,10 +16,21 @@ class YoutubeDownloader:
     def __init__(self):
         self.settings = self.load_settings()
         self.loader: Optional[BookmarkLoader] = None
+        self.bookmarks: List[Bookmark] = []
         self.root = tk.Tk()
         self.root.title('Youtube Downloader')
 
         self.render_widgets()
+
+    @property
+    def loader(self):
+        return self.__loader
+
+    @loader.setter
+    def loader(self, value: BookmarkLoader):
+        if value is not None:
+            value.path_to_bookmarks = self.settings.get(value.__str__(value))
+        self.__loader = value
 
     @staticmethod
     def load_settings():
@@ -77,6 +89,47 @@ class YoutubeDownloader:
         message_field.pack()
         message_scroll.config(command=message_field.yview)
 
+        bookmarks_frame = ttk.Labelframe(main_frame, text='Load bookmarks from browser')
+        bookmarks_frame.grid(row=0, column=1, sticky='n')
+
+        ttk.Label(bookmarks_frame, text='Chose a browser: ').grid(row=1, column=0)
+        current_browser = tk.StringVar()
+        select_browser_dropdown = ttk.Combobox(
+            bookmarks_frame,
+            textvariable=current_browser,
+            width=30,
+            values=list(self.supported_browsers.keys())
+        )
+        select_browser_dropdown.grid(row=1, column=1, pady=5)
+
+        ttk.Label(bookmarks_frame, text='Search: ').grid(row=2, column=0, sticky='w')
+        search_field = ttk.Entry(bookmarks_frame, width=33)
+        search_field.grid(row=2, column=1, sticky='w', pady=5)
+
+        ascending = tk.BooleanVar()
+        ascending_checkbutton = ttk.Checkbutton(
+            bookmarks_frame,
+            text='Order bookmarks from older to newer',
+            variable=ascending,
+        )
+        ascending_checkbutton.grid(row=3, column=0, pady=5)
+
+        ttk.Label(bookmarks_frame, text='Number of bookmarks: ').grid(row=5, column=0, sticky='w')
+        number_entry = ttk.Entry(bookmarks_frame, width=5)
+        number_entry.grid(row=5, column=1, sticky='w', pady=5)
+
+        ttk.Button(
+            bookmarks_frame,
+            text='Load Bookmarks',
+            command=lambda: self.load_bookmarks(
+                message_field,
+                current_browser.get(),
+                search_field.get(),
+                ascending.get(),
+                number_entry.get(),
+            ),
+        ).grid(row=7, column=1, sticky='e', pady=5)
+
     def render_settings_tab(self, settings_frame: ttk.Frame):
         # message_entry = ttk.Entry(settings_frame, state=tk.DISABLED)
         # message_entry.grid(row=0, column=0, padx=5, pady=5, sticky='w')
@@ -111,12 +164,27 @@ class YoutubeDownloader:
         path = filedialog.askdirectory()
         self.settings[browser] = path
 
-    def output_entry_message(self, entry: ttk.Entry, message: str, color: str = 'black'):
-        entry['state'] = tk.NORMAL
-        entry.delete(0, tk.END)
-        entry.insert(0, message)
-        entry['foreground'] = color
-        entry['state'] = tk.DISABLED
+    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit):
+        loader = self.supported_browsers.get(selected_browser)
+        if not loader:
+            self.output_message(textbox, 'Please select a supported browser')
+            return
+        self.loader = loader
+
+        try:
+            limit = int(limit)
+        except ValueError:
+            limit = None
+
+        self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
+
+        print(f'{b.title}\n'
+              for b in self.bookmarks)
+
+
+    @staticmethod
+    def output_message(textbox: tk.Text, message: str):
+        textbox.insert(tk.END, message + '\n')
 
     def download_video(self, url):
         print(url)

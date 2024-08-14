@@ -66,13 +66,17 @@ class FirefoxLoader(BookmarkLoader):
 
         return query
 
+    def __str__(self):
+        return 'Mozilla Firefox'
+
 
 class ChromeLoader(BookmarkLoader):
 
     def load_bookmarks(self, search: str = '', ascending=False, limit: int = None) -> List[Bookmark]:
-        self.path_to_bookmarks = os.path.join(self.path_to_bookmarks, 'Bookmarks')
+        path_to_bookmarks = self.path_to_bookmarks
+        path_to_bookmarks = os.path.join(path_to_bookmarks, 'Bookmarks')
 
-        with open(self.path_to_bookmarks, encoding='utf-8') as file:
+        with open(path_to_bookmarks, encoding='utf-8') as file:
             data = json.load(file)
 
         bookmarks = []
@@ -114,8 +118,12 @@ class ChromeLoader(BookmarkLoader):
 
         return bookmarks
 
+    def __str__(self):
+        return 'Google Chrome'
+
 # loader = ChromeLoader()
-# loader.path_to_bookmarks = 'C:\\Users\\NIKOLAY\\AppData\\Local\\Google\\Chrome\\User Data\\Default'
+# #loader.path_to_bookmarks = 'C:\\Users\\NIKOLAY\\AppData\\Local\\Google\\Chrome\\User Data\\Default'
+# loader.path_to_bookmarks = 'C:/Users/NIKOLAY/AppData/Local/Google/Chrome/User Data/Default'
 #
 # bookmarks = loader.load_bookmarks()
 #

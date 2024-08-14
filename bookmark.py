@@ -7,6 +7,7 @@ class Bookmark:
         self.title = title
         self.url = url
         self.time_created = time_created
+        self.is_selected = False
 
     @property
     def title(self):
