@@ -73,8 +73,7 @@ class FirefoxLoader(BookmarkLoader):
 class ChromeLoader(BookmarkLoader):
 
     def load_bookmarks(self, search: str = '', ascending=False, limit: int = None) -> List[Bookmark]:
-        path_to_bookmarks = self.path_to_bookmarks
-        path_to_bookmarks = os.path.join(path_to_bookmarks, 'Bookmarks')
+        path_to_bookmarks = os.path.join(self.path_to_bookmarks, 'Bookmarks')
 
         with open(path_to_bookmarks, encoding='utf-8') as file:
             data = json.load(file)
