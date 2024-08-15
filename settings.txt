@@ -1,1 +1,0 @@
-{"Google Chrome": "/home/nikolay/.config/google-chrome/Default", "Mozilla Firefox": "/home/nikolay/.mozilla/firefox/cduqroos.default-release"}
