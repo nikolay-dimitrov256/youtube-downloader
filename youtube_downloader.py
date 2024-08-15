@@ -29,7 +29,7 @@ class YoutubeDownloader:
     @loader.setter
     def loader(self, value: BookmarkLoader):
         if value is not None:
-            value.path_to_bookmarks = self.settings.get(value.__str__(value))
+            value.path_to_bookmarks = self.settings.get(value.__str__())
         self.__loader = value
 
     @staticmethod
@@ -169,7 +169,7 @@ class YoutubeDownloader:
         if not loader:
             self.output_message(textbox, 'Please select a supported browser')
             return
-        self.loader = loader
+        self.loader = loader()
 
         try:
             limit = int(limit)
@@ -178,8 +178,9 @@ class YoutubeDownloader:
 
         self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
 
-        print(f'{b.title}\n'
-              for b in self.bookmarks)
+        for b in self.bookmarks:
+            print(b.title)
+
 
 
     @staticmethod
