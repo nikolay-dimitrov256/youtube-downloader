@@ -29,7 +29,7 @@ class YoutubeDownloader:
     @loader.setter
     def loader(self, value: BookmarkLoader):
         if value is not None:
-            value.path_to_bookmarks = self.settings.get(value.__str__())
+            value.path_to_bookmarks = self.settings.get(str(value))
         self.__loader = value
 
     @staticmethod
@@ -118,6 +118,9 @@ class YoutubeDownloader:
         number_entry = ttk.Entry(bookmarks_frame, width=5)
         number_entry.grid(row=5, column=1, sticky='w', pady=5)
 
+        loaded_bookmarks_frame = ttk.Frame(bookmarks_frame)
+        loaded_bookmarks_frame.grid(row=9, columnspan=2, sticky='w')
+
         ttk.Button(
             bookmarks_frame,
             text='Load Bookmarks',
@@ -127,8 +130,11 @@ class YoutubeDownloader:
                 search_field.get(),
                 ascending.get(),
                 number_entry.get(),
+                loaded_bookmarks_frame,
             ),
         ).grid(row=7, column=1, sticky='e', pady=5)
+
+        ttk.Separator(bookmarks_frame).grid(row=8, columnspan=2, sticky='we', pady=5)
 
     def render_settings_tab(self, settings_frame: ttk.Frame):
         # message_entry = ttk.Entry(settings_frame, state=tk.DISABLED)
@@ -164,7 +170,7 @@ class YoutubeDownloader:
         path = filedialog.askdirectory()
         self.settings[browser] = path
 
-    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit):
+    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit, bookmarks_frame: ttk.Frame):
         loader = self.supported_browsers.get(selected_browser)
         if not loader:
             self.output_message(textbox, 'Please select a supported browser')
@@ -178,14 +184,40 @@ class YoutubeDownloader:
 
         self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
 
-        for b in self.bookmarks:
-            print(b.title)
+        self.render_bookmarks(bookmarks_frame)
 
+    def render_bookmarks(self, parent_frame: ttk.Frame):
+        self.clear_grid_frame(parent_frame)
 
+        for index, bookmark in enumerate(self.bookmarks):
+            self.render_single_bookmark(parent_frame, index, bookmark)
+
+    @staticmethod
+    def render_single_bookmark(parent_frame, row, bookmark: Bookmark) -> None:
+        def select_bookmark(bookmark_: Bookmark, is_selected_):
+            bookmark_.is_selected = is_selected_
+
+        bookmark_frame = ttk.Frame(parent_frame)
+        bookmark_frame.grid(row=row, column=0, sticky='w')
+
+        is_selected = tk.BooleanVar()
+        selected_checkbutton = ttk.Checkbutton(
+            bookmark_frame,
+            variable=is_selected,
+            command=lambda: select_bookmark(bookmark, is_selected.get()),
+        )
+        selected_checkbutton.grid(row=0, column=0,sticky='w')
+
+        ttk.Label(bookmark_frame, text=bookmark.title).grid(row=0, column=1, sticky='w')
 
     @staticmethod
     def output_message(textbox: tk.Text, message: str):
         textbox.insert(tk.END, message + '\n')
+
+    @staticmethod
+    def clear_grid_frame(frame: ttk.Frame):
+        for element in frame.grid_slaves():
+            element.destroy()
 
     def download_video(self, url):
         print(url)
