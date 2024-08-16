@@ -118,24 +118,60 @@ class YoutubeDownloader:
         number_entry = ttk.Entry(bookmarks_frame, width=5)
         number_entry.grid(row=5, column=1, sticky='w', pady=5)
 
-        loaded_bookmarks_frame = ttk.Frame(bookmarks_frame)
+        loaded_bookmarks_frame = ttk.Frame(bookmarks_frame, width=500, height=350)
         loaded_bookmarks_frame.grid(row=9, columnspan=2, sticky='we')
-
-        bookmarks_y_scroll = ttk.Scrollbar(loaded_bookmarks_frame)
-        bookmarks_y_scroll.grid(row=0, column=1, sticky='ns')
-        bookmarks_x_scroll = ttk.Scrollbar(loaded_bookmarks_frame, orient=tk.HORIZONTAL)
-        bookmarks_x_scroll.grid(row=1, column=0, sticky='ew')
+        loaded_bookmarks_frame.grid_propagate(False)
 
         loaded_bookmarks_canvas = tk.Canvas(
             loaded_bookmarks_frame,
-            yscrollcommand=bookmarks_y_scroll.set,
-            xscrollcommand=bookmarks_x_scroll.set,
-            width=500,
-            height=300,
+            scrollregion=(0, 0, 1000, 1000),
         )
-        loaded_bookmarks_canvas.grid(row=0, column=0, sticky='ew')
-        bookmarks_y_scroll.config(command=loaded_bookmarks_canvas.yview)
-        bookmarks_x_scroll.config(command=loaded_bookmarks_canvas.xview)
+        loaded_bookmarks_canvas.pack(expand=True, fill='both')
+        loaded_bookmarks_canvas.grid_propagate(False)
+
+        # mousewheel scrolling
+        loaded_bookmarks_canvas.bind(
+            '<MouseWheel>',
+            lambda event: loaded_bookmarks_canvas.yview_scroll(int(event.delta // 60), 'units'),
+        )
+
+        bookmarks_y_scroll = ttk.Scrollbar(
+            loaded_bookmarks_frame,
+            orient='vertical',
+            command=loaded_bookmarks_canvas.yview,
+        )
+        loaded_bookmarks_canvas.configure(yscrollcommand=bookmarks_y_scroll.set)
+        bookmarks_y_scroll.place(relx=1, rely=0, relheight=1, anchor='ne')
+
+        bookmarks_x_scroll = ttk.Scrollbar(
+            loaded_bookmarks_frame,
+            orient='horizontal',
+            command=loaded_bookmarks_canvas.xview,
+        )
+        loaded_bookmarks_canvas.configure(xscrollcommand=bookmarks_x_scroll.set)
+        bookmarks_x_scroll.place(relx=0, rely=1, relwidth=1, anchor='sw')
+
+        # bookmarks_y_scroll = ttk.Scrollbar(loaded_bookmarks_frame, orient=tk.VERTICAL)
+        # bookmarks_y_scroll.grid(row=0, column=1, sticky='ns')
+        # # bookmarks_y_scroll.pack(side='right', fill='y')
+        # bookmarks_x_scroll = ttk.Scrollbar(loaded_bookmarks_frame, orient=tk.HORIZONTAL)
+        # bookmarks_x_scroll.grid(row=1, column=0, sticky='ew')
+        # # bookmarks_x_scroll.pack(side='bottom', fill='x')
+        #
+        # loaded_bookmarks_canvas = tk.Canvas(
+        #     loaded_bookmarks_frame,
+        #     # yscrollcommand=bookmarks_y_scroll.set,
+        #     # xscrollcommand=bookmarks_x_scroll.set,
+        #     width=500,
+        #     height=300,
+        #     scrollregion=(0, 0, 1000, 1000)
+        # )
+        # loaded_bookmarks_canvas.grid(row=0, column=0, sticky='ew')
+        # # loaded_bookmarks_canvas.pack(side='left', fill='both')
+        # loaded_bookmarks_canvas.grid_propagate(False)
+        # # loaded_bookmarks_canvas.pack_propagate(False)
+        # bookmarks_y_scroll.config(command=loaded_bookmarks_canvas.yview)
+        # bookmarks_x_scroll.config(command=loaded_bookmarks_canvas.xview)
 
         ttk.Button(
             bookmarks_frame,
