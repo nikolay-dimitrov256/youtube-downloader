@@ -1,7 +1,10 @@
 import json
+import os
 import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Optional, List
+from pytube import YouTube
+from pydub import AudioSegment
 
 from bookmark import Bookmark
 from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
@@ -70,15 +73,6 @@ class YoutubeDownloader:
         url_entry = ttk.Entry(url_frame, width=70)
         url_entry.pack()
 
-        ttk.Button(
-            download_frame, text='Download mp3', command=lambda: self.download_mp3(url_entry.get())
-        ).grid(row=4, column=0)
-        ttk.Button(
-            download_frame, text='Download video', command=lambda: self.download_video(url_entry.get())
-        ).grid(row=4, column=1)
-
-        ttk.Separator(download_frame).grid(row=6, columnspan=2, pady=10, sticky='we')
-
         message_frame = ttk.Frame(download_frame)
         message_frame.grid(row=7, columnspan=2)
         message_scroll = ttk.Scrollbar(message_frame)
@@ -87,6 +81,17 @@ class YoutubeDownloader:
         message_field = tk.Text(message_frame, width=50, height=24, yscrollcommand=message_scroll.set)
         message_field.pack()
         message_scroll.config(command=message_field.yview)
+
+        ttk.Button(
+            download_frame,
+            text='Download mp3',
+            command=lambda: self.download_mp3(url_entry.get(), message_field)
+        ).grid(row=4, column=0)
+        ttk.Button(
+            download_frame, text='Download video', command=lambda: self.download_video(url_entry.get())
+        ).grid(row=4, column=1)
+
+        ttk.Separator(download_frame).grid(row=6, columnspan=2, pady=10, sticky='we')
 
         bookmarks_frame = ttk.Labelframe(main_frame, text='Load bookmarks from browser')
         bookmarks_frame.grid(row=0, column=1, sticky='n', padx=5)
@@ -249,8 +254,23 @@ class YoutubeDownloader:
     def download_video(self, url):
         print(url)
 
-    def download_mp3(self, url):
-        print(url)
+    def download_mp3(self, url, textbox: tk.Text, output_path=None):
+        filename = 'Test'
+        self.output_message(textbox, f'Downloading {filename}')
+
+        # Download the video from YouTube
+        yt = YouTube(url)
+        stream = yt.streams.filter(only_audio=True).first()
+        stream.download(filename='temp_audio')
+
+        # Convert the downloaded audio to MP3 with the best quality
+        audio = AudioSegment.from_file('temp_audio')
+        audio.export(filename + '.mp3', format='mp3', bitrate='320k')  # Bitrate set to 320 kbps
+
+        # Clean up temporary file
+        os.remove('temp_audio')
+
+        self.output_message(textbox, f'Finished downloading {filename}')
 
     def run(self):
         self.root.mainloop()
