@@ -64,9 +64,6 @@ class YoutubeDownloader:
         download_frame = ttk.LabelFrame(main_frame, text='Download from single URL')
         download_frame.grid(row=0, column=0)
 
-        message_entry = ttk.Entry(download_frame, state='disabled', width=70)
-        message_entry.grid(row=0, columnspan=2)
-
         url_frame = ttk.LabelFrame(download_frame, text='Enter URL:')
         url_frame.grid(row=2, columnspan=2, pady=(0, 10))
 
@@ -87,7 +84,7 @@ class YoutubeDownloader:
         message_scroll = ttk.Scrollbar(message_frame)
         message_scroll.pack(side='right', fill='y')
 
-        message_field = tk.Text(message_frame, width=50, height=20, yscrollcommand=message_scroll.set)
+        message_field = tk.Text(message_frame, width=50, height=24, yscrollcommand=message_scroll.set)
         message_field.pack()
         message_scroll.config(command=message_field.yview)
 
@@ -211,12 +208,22 @@ class YoutubeDownloader:
 
     def render_footer_buttons(self, grand_parent_frame: ttk.LabelFrame):
         button_frame = tk.Frame(grand_parent_frame)
-        button_frame.grid(row=11, columnspan=2)
+        button_frame.grid(row=11, columnspan=2, pady=(5, 0), sticky='nsew')
         ttk.Button(
             button_frame,
             text='Select all',
             command=self.select_all_bookmarks,
-        ).grid(row=0, column=0)
+        ).grid(row=0, column=0, sticky='w')
+
+        ttk.Button(
+            button_frame,
+            text='Download videos'
+        ).grid(row=0, column=1)
+
+        ttk.Button(
+            button_frame,
+            text='Download MP3s'
+        ).grid(row=0, column=2, sticky='e')
 
     @staticmethod
     def select_bookmark(bookmark: Bookmark, is_selected):
