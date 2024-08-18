@@ -29,8 +29,8 @@ class FirefoxLoader(BookmarkLoader):
         cursor = connection.cursor()
 
         # Query the bookmarks
-        query = self._get_query(search, ascending, limit)
-        cursor.execute(query)
+        query, params = self._get_query(search, ascending, limit)
+        cursor.execute(query, params)
         bookmarks_data = cursor.fetchall()
 
         bookmarks = [Bookmark(title, url, self._convert_date(date_added)) for title, url, date_added in bookmarks_data]
@@ -45,6 +45,10 @@ class FirefoxLoader(BookmarkLoader):
 
     @staticmethod
     def _get_query(search: str, ascending: bool, limit: int):
+        # Prepare the search pattern with wildcards
+        search_pattern = f'%{search.lower()}%' if search else '%'
+
+        # Create the base query
         query = f"""
         SELECT
             mb.title,
@@ -58,13 +62,14 @@ class FirefoxLoader(BookmarkLoader):
             mb.fk = mp.id
         WHERE
             LOWER(mp.url) LIKE '%youtube.com%'
-            {f'AND LOWER(mb.title) LIKE %{search}%' if search else ''}
+            AND LOWER(mb.title) LIKE ?
         ORDER BY
             mb.dateAdded {'ASC' if ascending else 'DESC'}
         {f'LIMIT {limit}' if limit else ''}
+        ;
         """
 
-        return query
+        return query, (search_pattern,)
 
     def __str__(self):
         return 'Mozilla Firefox'
@@ -109,7 +114,7 @@ class ChromeLoader(BookmarkLoader):
                         if 'youtube.com' not in url.lower():
                             continue
 
-                        if search not in title:
+                        if search.lower() not in title.lower():
                             continue
 
                         bookmark = Bookmark(title, url, time_created)
@@ -120,11 +125,12 @@ class ChromeLoader(BookmarkLoader):
     def __str__(self):
         return 'Google Chrome'
 
-# loader = ChromeLoader()
-# #loader.path_to_bookmarks = 'C:\\Users\\NIKOLAY\\AppData\\Local\\Google\\Chrome\\User Data\\Default'
-# loader.path_to_bookmarks = 'C:/Users/NIKOLAY/AppData/Local/Google/Chrome/User Data/Default'
-#
-# bookmarks = loader.load_bookmarks()
-#
-# for b in bookmarks:
-#     print(b.title)
+
+if __name__ == '__main__':
+    loader = FirefoxLoader()
+    loader.path_to_bookmarks = 'C:/Users/NIKOLAY/AppData/Roaming/Mozilla/Firefox/Profiles/tarigwgs.default-release'
+
+    bookmarks = loader.load_bookmarks()
+
+    for b in bookmarks:
+        print(b.title)
