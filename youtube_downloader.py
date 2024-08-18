@@ -18,6 +18,7 @@ class YoutubeDownloader:
         self.settings = self.load_settings()
         self.loader: Optional[BookmarkLoader] = None
         self.bookmarks: List[Bookmark] = []
+        self.bookmarks_state: List[tk.BooleanVar] = []
         self.root = tk.Tk()
         self.root.title('Youtube Downloader')
 
@@ -132,6 +133,7 @@ class YoutubeDownloader:
                 ascending.get(),
                 number_entry.get(),
                 loaded_bookmarks_frame,
+                bookmarks_frame
             ),
         ).grid(row=7, column=1, sticky='e', pady=5)
 
@@ -167,7 +169,7 @@ class YoutubeDownloader:
         path = filedialog.askdirectory()
         self.settings[browser] = path
 
-    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit, parent_frame: ScrollableFrame):
+    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit, parent_frame: ScrollableFrame, grandparent_frame: ttk.LabelFrame):
         loader = self.supported_browsers.get(selected_browser)
         if not loader:
             self.output_message(textbox, 'Please select a supported browser')
@@ -181,19 +183,23 @@ class YoutubeDownloader:
 
         self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
 
-        self.render_bookmarks(parent_frame)
+        self.render_bookmarks(parent_frame, grandparent_frame)
 
-    def render_bookmarks(self, parent_frame: ScrollableFrame):
+    def render_bookmarks(self, parent_frame: ScrollableFrame, grand_parent_frame: ttk.LabelFrame):
         self.clear_frame(parent_frame.scrollable_frame)
 
         for index, bookmark in enumerate(self.bookmarks):
             self.render_single_bookmark(parent_frame.scrollable_frame, index, bookmark)
+
+        self.render_footer_buttons(grand_parent_frame)
 
     def render_single_bookmark(self, parent: tk.Frame, row, bookmark: Bookmark) -> None:
         bookmark_frame = tk.Frame(parent)
         bookmark_frame.grid(row=row, column=0, sticky='we')
 
         is_selected = tk.BooleanVar()
+        self.bookmarks_state.append(is_selected)
+
         selected_checkbutton = ttk.Checkbutton(
             bookmark_frame,
             variable=is_selected,
@@ -203,16 +209,33 @@ class YoutubeDownloader:
 
         ttk.Label(bookmark_frame, text=bookmark.title).grid(row=0, column=1, sticky='we')
 
+    def render_footer_buttons(self, grand_parent_frame: ttk.LabelFrame):
+        button_frame = tk.Frame(grand_parent_frame)
+        button_frame.grid(row=11, columnspan=2)
+        ttk.Button(
+            button_frame,
+            text='Select all',
+            command=self.select_all_bookmarks,
+        ).grid(row=0, column=0)
+
     @staticmethod
     def select_bookmark(bookmark: Bookmark, is_selected):
         bookmark.is_selected = is_selected
+
+    def select_all_bookmarks(self):
+        for b in self.bookmarks:
+            b.is_selected = True
+
+        for bs in self.bookmarks_state:
+            bs.set(True)
 
     @staticmethod
     def output_message(textbox: tk.Text, message: str):
         textbox.insert(tk.END, message + '\n')
 
-    @staticmethod
-    def clear_frame(frame: tk.Frame):
+    def clear_frame(self, frame: tk.Frame):
+        self.bookmarks_state = []
+
         for element in frame.grid_slaves():
             element.destroy()
 

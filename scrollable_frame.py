@@ -21,12 +21,6 @@ class ScrollableFrame(tk.Frame):
             )
         )
 
-        # mousewheel scrolling
-        self.scrollable_frame.bind(
-            '<MouseWheel>',
-            lambda event: self.canvas.yview_scroll(int(event.delta // 60), 'units'),
-        )
-
         # Add the scrollable frame to the canvas
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
 
