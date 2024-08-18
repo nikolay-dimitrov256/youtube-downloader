@@ -5,6 +5,7 @@ from typing import Optional, List
 
 from bookmark import Bookmark
 from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
+from scrollable_frame import ScrollableFrame
 
 
 class YoutubeDownloader:
@@ -118,60 +119,8 @@ class YoutubeDownloader:
         number_entry = ttk.Entry(bookmarks_frame, width=5)
         number_entry.grid(row=5, column=1, sticky='w', pady=5)
 
-        loaded_bookmarks_frame = ttk.Frame(bookmarks_frame, width=500, height=350)
-        loaded_bookmarks_frame.grid(row=9, columnspan=2, sticky='we')
-        loaded_bookmarks_frame.grid_propagate(False)
-
-        loaded_bookmarks_canvas = tk.Canvas(
-            loaded_bookmarks_frame,
-            scrollregion=(0, 0, 1000, 1000),
-        )
-        loaded_bookmarks_canvas.pack(expand=True, fill='both')
-        loaded_bookmarks_canvas.grid_propagate(False)
-
-        # mousewheel scrolling
-        loaded_bookmarks_canvas.bind(
-            '<MouseWheel>',
-            lambda event: loaded_bookmarks_canvas.yview_scroll(int(event.delta // 60), 'units'),
-        )
-
-        bookmarks_y_scroll = ttk.Scrollbar(
-            loaded_bookmarks_frame,
-            orient='vertical',
-            command=loaded_bookmarks_canvas.yview,
-        )
-        loaded_bookmarks_canvas.configure(yscrollcommand=bookmarks_y_scroll.set)
-        bookmarks_y_scroll.place(relx=1, rely=0, relheight=1, anchor='ne')
-
-        bookmarks_x_scroll = ttk.Scrollbar(
-            loaded_bookmarks_frame,
-            orient='horizontal',
-            command=loaded_bookmarks_canvas.xview,
-        )
-        loaded_bookmarks_canvas.configure(xscrollcommand=bookmarks_x_scroll.set)
-        bookmarks_x_scroll.place(relx=0, rely=1, relwidth=1, anchor='sw')
-
-        # bookmarks_y_scroll = ttk.Scrollbar(loaded_bookmarks_frame, orient=tk.VERTICAL)
-        # bookmarks_y_scroll.grid(row=0, column=1, sticky='ns')
-        # # bookmarks_y_scroll.pack(side='right', fill='y')
-        # bookmarks_x_scroll = ttk.Scrollbar(loaded_bookmarks_frame, orient=tk.HORIZONTAL)
-        # bookmarks_x_scroll.grid(row=1, column=0, sticky='ew')
-        # # bookmarks_x_scroll.pack(side='bottom', fill='x')
-        #
-        # loaded_bookmarks_canvas = tk.Canvas(
-        #     loaded_bookmarks_frame,
-        #     # yscrollcommand=bookmarks_y_scroll.set,
-        #     # xscrollcommand=bookmarks_x_scroll.set,
-        #     width=500,
-        #     height=300,
-        #     scrollregion=(0, 0, 1000, 1000)
-        # )
-        # loaded_bookmarks_canvas.grid(row=0, column=0, sticky='ew')
-        # # loaded_bookmarks_canvas.pack(side='left', fill='both')
-        # loaded_bookmarks_canvas.grid_propagate(False)
-        # # loaded_bookmarks_canvas.pack_propagate(False)
-        # bookmarks_y_scroll.config(command=loaded_bookmarks_canvas.yview)
-        # bookmarks_x_scroll.config(command=loaded_bookmarks_canvas.xview)
+        loaded_bookmarks_frame = ScrollableFrame(bookmarks_frame)
+        loaded_bookmarks_frame.grid(row=9, columnspan=2, sticky='nsew')
 
         ttk.Button(
             bookmarks_frame,
@@ -182,17 +131,13 @@ class YoutubeDownloader:
                 search_field.get(),
                 ascending.get(),
                 number_entry.get(),
-                loaded_bookmarks_canvas,
+                loaded_bookmarks_frame,
             ),
         ).grid(row=7, column=1, sticky='e', pady=5)
 
         ttk.Separator(bookmarks_frame).grid(row=8, columnspan=2, sticky='we', pady=5)
 
     def render_settings_tab(self, settings_frame: ttk.Frame):
-        # message_entry = ttk.Entry(settings_frame, state=tk.DISABLED)
-        # message_entry.grid(row=0, column=0, padx=5, pady=5, sticky='w')
-        # self.output_entry_message(message_entry, 'Chose a browser', 'green')
-
         ttk.Label(settings_frame, text='Chose a browser: ').grid(row=2, column=0, padx=5, pady=5, sticky='w')
         current_browser = tk.StringVar()
         select_browser_dropdown = ttk.Combobox(
@@ -222,7 +167,7 @@ class YoutubeDownloader:
         path = filedialog.askdirectory()
         self.settings[browser] = path
 
-    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit, bookmarks_canvas: tk.Canvas):
+    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit, parent_frame: ScrollableFrame):
         loader = self.supported_browsers.get(selected_browser)
         if not loader:
             self.output_message(textbox, 'Please select a supported browser')
@@ -236,39 +181,39 @@ class YoutubeDownloader:
 
         self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
 
-        self.render_bookmarks(bookmarks_canvas)
+        self.render_bookmarks(parent_frame)
 
-    def render_bookmarks(self, canvas: tk.Canvas):
-        self.clear_canvas(canvas)
+    def render_bookmarks(self, parent_frame: ScrollableFrame):
+        self.clear_frame(parent_frame.scrollable_frame)
 
         for index, bookmark in enumerate(self.bookmarks):
-            self.render_single_bookmark(canvas, index, bookmark)
+            self.render_single_bookmark(parent_frame.scrollable_frame, index, bookmark)
 
-    @staticmethod
-    def render_single_bookmark(parent, row, bookmark: Bookmark) -> None:
-        def select_bookmark(bookmark_: Bookmark, is_selected_):
-            bookmark_.is_selected = is_selected_
-
-        bookmark_frame = ttk.Frame(parent)
+    def render_single_bookmark(self, parent: tk.Frame, row, bookmark: Bookmark) -> None:
+        bookmark_frame = tk.Frame(parent)
         bookmark_frame.grid(row=row, column=0, sticky='we')
 
         is_selected = tk.BooleanVar()
         selected_checkbutton = ttk.Checkbutton(
             bookmark_frame,
             variable=is_selected,
-            command=lambda: select_bookmark(bookmark, is_selected.get()),
+            command=lambda: self.select_bookmark(bookmark, is_selected.get()),
         )
         selected_checkbutton.grid(row=0, column=0, sticky='w')
 
         ttk.Label(bookmark_frame, text=bookmark.title).grid(row=0, column=1, sticky='we')
 
     @staticmethod
+    def select_bookmark(bookmark: Bookmark, is_selected):
+        bookmark.is_selected = is_selected
+
+    @staticmethod
     def output_message(textbox: tk.Text, message: str):
         textbox.insert(tk.END, message + '\n')
 
     @staticmethod
-    def clear_canvas(canvas: tk.Canvas):
-        for element in canvas.grid_slaves():
+    def clear_frame(frame: tk.Frame):
+        for element in frame.grid_slaves():
             element.destroy()
 
     def download_video(self, url):
