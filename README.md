@@ -3,7 +3,7 @@
 **UNDER CONSTRUCTION**
 
 **How to install ffmpeg:**
-
+**On Windows**
 1. Download FFmpeg
 Go to the official FFmpeg website.
 Under "Get packages & executable files," click on the "Windows" link.
@@ -31,4 +31,9 @@ Click "OK" to close all windows.
 Open a new Command Prompt window.
 Type ffmpeg and press Enter.
 If FFmpeg is correctly installed, you'll see information about FFmpeg and its usage.
-Summary:
+
+**On macOS:**
+brew install ffmpeg
+
+**On Linux:**
+sudo apt-get install ffmpeg
