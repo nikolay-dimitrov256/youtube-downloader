@@ -255,6 +255,23 @@ class YoutubeDownloader:
         for element in frame.grid_slaves():
             element.destroy()
 
+    @staticmethod
+    def is_youtube_playlist(url):
+        ydl_opts = {
+            'quiet': True,  # Suppress output for a clean check
+            'extract_flat': True,  # Extract playlist metadata without downloading
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                info_dict = ydl.extract_info(url, download=False)
+                if 'entries' in info_dict:
+                    print(info_dict['entries'])
+                    return True
+                #return 'entries' in info_dict  # If 'entries' exists, it's a playlist
+            except yt_dlp.utils.DownloadError:
+                return False  # If extraction fails, it's likely not a playlist
+
     def download_videos(self, textbox: tk.Text):
         bookmarks_to_download = [b for b in self.bookmarks if b.is_selected]
 
@@ -296,6 +313,9 @@ class YoutubeDownloader:
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print(self.is_youtube_playlist(url))
+            return
+
             info_dict = ydl.extract_info(url, download=True)
             title = info_dict.get('title', None)
 
