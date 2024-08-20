@@ -1,10 +1,10 @@
 import json
-import os
+#import os
+import yt_dlp
 import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Optional, List
-from pytube import YouTube
-from pydub import AudioSegment
+#from pydub import AudioSegment
 
 from bookmark import Bookmark
 from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
@@ -88,7 +88,9 @@ class YoutubeDownloader:
             command=lambda: self.download_mp3(url_entry.get(), message_field)
         ).grid(row=4, column=0)
         ttk.Button(
-            download_frame, text='Download video', command=lambda: self.download_video(url_entry.get())
+            download_frame,
+            text='Download video',
+            command=lambda: self.download_video(url_entry.get(), message_field)
         ).grid(row=4, column=1)
 
         ttk.Separator(download_frame).grid(row=6, columnspan=2, pady=10, sticky='we')
@@ -185,15 +187,15 @@ class YoutubeDownloader:
 
         self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
 
-        self.render_bookmarks(parent_frame, grandparent_frame)
+        self.render_bookmarks(parent_frame, grandparent_frame, textbox)
 
-    def render_bookmarks(self, parent_frame: ScrollableFrame, grand_parent_frame: ttk.LabelFrame):
+    def render_bookmarks(self, parent_frame: ScrollableFrame, grand_parent_frame: ttk.LabelFrame, textbox: tk.Text):
         self.clear_frame(parent_frame.scrollable_frame)
 
         for index, bookmark in enumerate(self.bookmarks):
             self.render_single_bookmark(parent_frame.scrollable_frame, index, bookmark)
 
-        self.render_footer_buttons(grand_parent_frame)
+        self.render_footer_buttons(grand_parent_frame, textbox)
 
     def render_single_bookmark(self, parent: tk.Frame, row, bookmark: Bookmark) -> None:
         bookmark_frame = tk.Frame(parent)
@@ -211,7 +213,7 @@ class YoutubeDownloader:
 
         ttk.Label(bookmark_frame, text=bookmark.title).grid(row=0, column=1, sticky='we')
 
-    def render_footer_buttons(self, grand_parent_frame: ttk.LabelFrame):
+    def render_footer_buttons(self, grand_parent_frame: ttk.LabelFrame, textbox: tk.Text):
         button_frame = tk.Frame(grand_parent_frame)
         button_frame.grid(row=11, columnspan=2, pady=(5, 0), sticky='nsew')
         ttk.Button(
@@ -222,13 +224,15 @@ class YoutubeDownloader:
 
         ttk.Button(
             button_frame,
-            text='Download videos'
-        ).grid(row=0, column=1)
+            text='Download MP3s',
+            command=lambda: self.download_mp3s(textbox)
+        ).grid(row=0, column=1, sticky='e')
 
         ttk.Button(
             button_frame,
-            text='Download MP3s'
-        ).grid(row=0, column=2, sticky='e')
+            text='Download videos',
+            command=lambda: self.download_videos(textbox)
+        ).grid(row=0, column=2)
 
     @staticmethod
     def select_bookmark(bookmark: Bookmark, is_selected):
@@ -251,26 +255,51 @@ class YoutubeDownloader:
         for element in frame.grid_slaves():
             element.destroy()
 
-    def download_video(self, url):
-        print(url)
+    def download_videos(self, textbox: tk.Text):
+        bookmarks_to_download = [b for b in self.bookmarks if b.is_selected]
 
-    def download_mp3(self, url, textbox: tk.Text, output_path=None):
-        filename = 'Test'
-        self.output_message(textbox, f'Downloading {filename}')
+        for b in bookmarks_to_download:
+            self.download_video(b.url, textbox)
 
-        # Download the video from YouTube
-        yt = YouTube(url)
-        stream = yt.streams.filter(only_audio=True).first()
-        stream.download(filename='temp_audio')
+    def download_video(self, url, textbox: tk.Text, output_path='Downloads'):
+        ydl_opts = {
+            'format': 'bestvideo+bestaudio/best',  # Download the best video and audio separately
+            'outtmpl': output_path + '/%(title)s.%(ext)s',  # Template for output filename
+            'merge_output_format': 'mkv',  # Merge into mp4 format
+            'postprocessors': [{
+                'key': 'FFmpegVideoConvertor',  # Ensures conversion if needed
+                'preferedformat': 'mkv',  # Preferred format for the output file
+            }],
+        }
 
-        # Convert the downloaded audio to MP3 with the best quality
-        audio = AudioSegment.from_file('temp_audio')
-        audio.export(filename + '.mp3', format='mp3', bitrate='320k')  # Bitrate set to 320 kbps
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            title = info_dict.get('title', None)
 
-        # Clean up temporary file
-        os.remove('temp_audio')
+            self.output_message(textbox, message=f'{title} was downloaded successfully')
 
-        self.output_message(textbox, f'Finished downloading {filename}')
+    def download_mp3s(self, textbox: tk.Text):
+        bookmarks_to_download = [b for b in self.bookmarks if b.is_selected]
+
+        for b in bookmarks_to_download:
+            self.download_mp3(b.url, textbox)
+
+    def download_mp3(self, url, textbox: tk.Text, output_path='Downloads'):
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': output_path + '/%(title)s.%(ext)s',  # Save as original format first
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '0',  # '0' ensures the best possible quality
+            }],
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            title = info_dict.get('title', None)
+
+            self.output_message(textbox, message=f'{title} was downloaded successfully')
 
     def run(self):
         self.root.mainloop()
