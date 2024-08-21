@@ -10,16 +10,35 @@ from bookmark import Bookmark
 
 class BookmarkLoader(ABC):
     def __init__(self):
+        # The path to the directory where the bookmarks file is located.
         self.path_to_bookmarks = ''
 
     @abstractmethod
     def load_bookmarks(self, search: str = '', ascending=False, limit: int = None) -> List[Bookmark]:
+        """
+        :param search: string, optional. If it is filled, only the bookmarks, which contain the string case
+        insensitively are returned, else all bookmarks are returned.
+        :param ascending: boolean, optional. Sets the ordering of the bookmarks by creation date.
+        :param limit: integer, optional. Sets the number of bookmarks returned. If it is not filled, all bookmarks are
+        returned.
+        :return: list of Bookmark objects
+        """
+        
         pass
 
 
 class FirefoxLoader(BookmarkLoader):
 
     def load_bookmarks(self, search: str = '', ascending=False, limit: int = None) -> List[Bookmark]:
+        """
+        :param search: string, optional. If it is filled, only the bookmarks, which contain the string case
+        insensitively are returned, else all bookmarks are returned.
+        :param ascending: boolean, optional. Sets the ordering of the bookmarks by creation date.
+        :param limit: integer, optional. Sets the number of bookmarks returned. If it is not filled, all bookmarks are
+        returned.
+        :return: list of Bookmark objects
+        """
+
         firefox_profile_dir = os.path.expanduser(self.path_to_bookmarks)
         # Path to the bookmarks SQLite database file
         bookmarks_db_path = os.path.join(firefox_profile_dir, 'places.sqlite')
@@ -78,6 +97,15 @@ class FirefoxLoader(BookmarkLoader):
 class ChromeLoader(BookmarkLoader):
 
     def load_bookmarks(self, search: str = '', ascending=False, limit: int = None) -> List[Bookmark]:
+        """
+        :param search: string, optional. If it is filled, only the bookmarks, which contain the string case
+        insensitively are returned, else all bookmarks are returned.
+        :param ascending: boolean, optional. Sets the ordering of the bookmarks by creation date.
+        :param limit: integer, optional. Sets the number of bookmarks returned. If it is not filled, all bookmarks are
+        returned.
+        :return: list of Bookmark objects
+        """
+
         path_to_bookmarks = os.path.join(self.path_to_bookmarks, 'Bookmarks')
 
         with open(path_to_bookmarks, encoding='utf-8') as file:
