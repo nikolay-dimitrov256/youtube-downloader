@@ -3,7 +3,7 @@
 ## Description
 
 This program downloads YouTube videos as video files or mp3s.
-The user can download by pasting a single url, or by loading multiple urls from the browser's bookmarks a batch download them with a single click. 
+The user can download by pasting a single url, or by loading multiple urls from the browser's bookmarks and batch download them with a single click. 
 Currently Google Chrome and Mozilla Firefox are supported.
 
 ## Requirements
