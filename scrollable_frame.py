@@ -49,6 +49,7 @@ class ScrollableFrame(tk.Frame):
         self.canvas.xview_scroll((event.delta // 80), "units")
 
 
+# Test code
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("400x300")
