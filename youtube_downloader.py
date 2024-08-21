@@ -1,10 +1,8 @@
 import json
-# import os
 import yt_dlp
 import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Optional, List
-# from pydub import AudioSegment
 
 from bookmark import Bookmark
 from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
@@ -168,10 +166,14 @@ class YoutubeDownloader:
         ).grid(row=6, column=1, pady=30)
 
     def select_path_to_bookmarks(self, browser: str):
-        if browser not in self.supported_browsers:
+        if not browser or browser not in self.supported_browsers:
             return
 
         path = filedialog.askdirectory()
+
+        if not path:
+            return
+
         self.settings[browser] = path
 
     def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit,
