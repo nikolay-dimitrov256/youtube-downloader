@@ -71,6 +71,7 @@ class YoutubeDownloader:
         url_frame.grid(row=2, columnspan=2, pady=(0, 10))
 
         url_entry = ttk.Entry(url_frame, width=70)
+        url_entry.bind('<FocusIn>', lambda e: url_entry.delete(0, tk.END))
         url_entry.pack()
 
         message_frame = ttk.Frame(download_frame)
