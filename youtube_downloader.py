@@ -182,6 +182,7 @@ class YoutubeDownloader:
         if not loader:
             self.output_message(textbox, 'Please select a supported browser')
             return
+
         self.loader = loader()
 
         try:
@@ -189,9 +190,12 @@ class YoutubeDownloader:
         except ValueError:
             limit = None
 
-        self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
+        try:
+            self.bookmarks = self.loader.load_bookmarks(search, ascending, limit)
 
-        self.render_bookmarks(parent_frame, grandparent_frame, textbox)
+            self.render_bookmarks(parent_frame, grandparent_frame, textbox)
+        except Exception as e:
+            self.output_message(textbox, str(e))
 
     def render_bookmarks(self, parent_frame: ScrollableFrame, grand_parent_frame: ttk.LabelFrame, textbox: tk.Text):
         self.clear_frame(parent_frame.scrollable_frame)
