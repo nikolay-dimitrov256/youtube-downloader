@@ -185,7 +185,7 @@ if __name__ == '__main__':
     loader = FirefoxLoader()
     loader.path_to_bookmarks = 'C:/Users/NIKOLAY/AppData/Roaming/Mozilla/Firefox/Profiles/tarigwgs.default-release'
 
-    bookmarks = loader.load_bookmarks()
+    bookmarks_ = loader.load_bookmarks()
 
-    for b in bookmarks:
+    for b in bookmarks_:
         print(b.title)
