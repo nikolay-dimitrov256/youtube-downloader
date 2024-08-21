@@ -18,14 +18,19 @@ class Bookmark:
         self.__title = self._clean_title(value)
 
     @staticmethod
-    def _clean_title(value: str):
+    def _clean_title(value: str) -> str:
+        """
+        :param value: 'str'
+        :return: 'str' Cleans the title of the bookmark from redundant text
+        """
+
         pattern = r'^(\(\d+\)\s).+'
         match = re.search(pattern, value)
 
         if match:
             redundant = match.group(1)
-            value = value.split(redundant)[-1]
+            value = ''.join(value.split(redundant))
 
-        value = value.split(' - YouTube')[0]
+        value = ''.join(value.split(' - YouTube'))
 
         return value
