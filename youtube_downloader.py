@@ -1,10 +1,10 @@
 import json
-#import os
+# import os
 import yt_dlp
 import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Optional, List
-#from pydub import AudioSegment
+# from pydub import AudioSegment
 
 from bookmark import Bookmark
 from loaders import BookmarkLoader, FirefoxLoader, ChromeLoader
@@ -173,7 +173,8 @@ class YoutubeDownloader:
         path = filedialog.askdirectory()
         self.settings[browser] = path
 
-    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit, parent_frame: ScrollableFrame, grandparent_frame: ttk.LabelFrame):
+    def load_bookmarks(self, textbox: tk.Text, selected_browser, search, ascending, limit,
+                       parent_frame: ScrollableFrame, grandparent_frame: ttk.LabelFrame):
         loader = self.supported_browsers.get(selected_browser)
         if not loader:
             self.output_message(textbox, 'Please select a supported browser')
@@ -268,7 +269,7 @@ class YoutubeDownloader:
                 if 'entries' in info_dict:
                     print(info_dict['entries'])
                     return True
-                #return 'entries' in info_dict  # If 'entries' exists, it's a playlist
+                # return 'entries' in info_dict  # If 'entries' exists, it's a playlist
             except yt_dlp.utils.DownloadError:
                 return False  # If extraction fails, it's likely not a playlist
 
@@ -276,7 +277,11 @@ class YoutubeDownloader:
         bookmarks_to_download = [b for b in self.bookmarks if b.is_selected]
 
         for b in bookmarks_to_download:
-            self.download_video(b.url, textbox)
+            self.output_message(textbox, message=f'Downloading "{b.title}"')
+            try:
+                self.download_video(b.url, textbox)
+            except Exception as e:
+                self.output_message(textbox, message=str(e))
 
     def download_video(self, url, textbox: tk.Text, output_path='Downloads'):
         ydl_opts = {
@@ -287,19 +292,25 @@ class YoutubeDownloader:
                 'key': 'FFmpegVideoConvertor',  # Ensures conversion if needed
                 'preferedformat': 'mkv',  # Preferred format for the output file
             }],
+            'noplaylist': True,  # Do not download the entire playlist, only the video
+            'playlist_items': '1',  # Only download the first video if it's a playlist
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             title = info_dict.get('title', None)
 
-            self.output_message(textbox, message=f'{title} was downloaded successfully')
+            self.output_message(textbox, message=f'"{title}" was downloaded successfully')
 
     def download_mp3s(self, textbox: tk.Text):
         bookmarks_to_download = [b for b in self.bookmarks if b.is_selected]
 
         for b in bookmarks_to_download:
-            self.download_mp3(b.url, textbox)
+            self.output_message(textbox, message=f'Downloading "{b.title}"')
+            try:
+                self.download_mp3(b.url, textbox)
+            except Exception as e:
+                self.output_message(textbox, message=str(e))
 
     def download_mp3(self, url, textbox: tk.Text, output_path='Downloads'):
         ydl_opts = {
@@ -310,16 +321,16 @@ class YoutubeDownloader:
                 'preferredcodec': 'mp3',
                 'preferredquality': '0',  # '0' ensures the best possible quality
             }],
+            'noplaylist': True,  # Do not download the entire playlist, only the video
+            'playlist_items': '1',  # Only download the first video if it's a playlist
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            print(self.is_youtube_playlist(url))
-            return
-
+            # Extract and download the first video only
             info_dict = ydl.extract_info(url, download=True)
             title = info_dict.get('title', None)
 
-            self.output_message(textbox, message=f'{title} was downloaded successfully')
+            self.output_message(textbox, message=f'"{title}" was downloaded successfully')
 
     def run(self):
         self.root.mainloop()
