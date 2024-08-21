@@ -11,7 +11,7 @@ Currently Google Chrome and Mozilla Firefox are supported.
 Before using the program, the user needs to have FFmpeg installed and added to the system PATH. Instructions are below.
 
 In case of loading bookmarks from the browser, the user needs to specify, in the "Settings" tab, the path to the directory, where the respective browser bookmarks file is.
-In Chrome the file is called Bookmarks, and for Firefox, places.sql. The path is usually as follows:
+In Chrome the file is called Bookmarks, and for Firefox, places.sqlite. The path is usually as follows:
 
 ### On Windows:  
 
