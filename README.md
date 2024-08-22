@@ -3,23 +3,35 @@
 ## Description
 
 This program downloads YouTube videos as video files or mp3s.
-The user can download by pasting a single url, or by loading multiple urls from the browser's bookmarks and batch download them with a single click. 
+The user can download by pasting a single url, or by loading multiple urls from the browser's bookmarks and download
+them in a batch. 
 Currently Google Chrome and Mozilla Firefox are supported.
 
 ## Requirements
 
 Before using the program, the user needs to have FFmpeg installed and added to the system PATH. Instructions are below.
 
-In case of loading bookmarks from the browser, the user needs to specify, in the "Settings" tab, the path to the directory, where the respective browser bookmarks file is.
-In Chrome the file is called Bookmarks, and for Firefox, places.sqlite. The path is usually as follows:
+In case of loading bookmarks from the browser, the user needs to specify, in the "Settings" tab, the path to the
+directory, where the respective browser bookmarks file is.
+In Chrome the file is called Bookmarks, and for Firefox, places.sqlite.
+The user shouldn't select the file, only the directory.
+The path is usually as follows:
 
-### On Windows:  
+>### On Windows:  
+>
+>For **Google Chrome**:  
+>C:/Users/username/AppData/Local/Google/Chrome/User Data/Default
+>
+>For **Mozilla Firefox**:  
+>C:/Users/username/AppData/Roaming/Mozilla/Firefox/Profiles/tarigwgs.default-release
 
-For **Google Chrome**:  
-C:/Users/<username>/AppData/Local/Google/Chrome/User Data/Default
-
-For **Mozilla Firefox**:  
-C:/Users/<username>/AppData/Roaming/Mozilla/Firefox/Profiles/tarigwgs.default-release
+>### On Linux:
+>
+>For **Google Chrome**:  
+>/home/username/.config/google-chrome/Default
+>
+>For **Mozilla Firefox**:  
+>/home/username/.mozilla/firefox/cduqroos.default-release
 
 ## How to install ffmpeg:  
 >### On Windows:
