@@ -317,7 +317,7 @@ class YoutubeDownloader:
 
     def download_video(self, url, textbox: tk.Text, output_path='Downloads'):
         ydl_opts = {
-            'format': 'bestvideo+bestaudio/best',  # Download the best video and audio separately
+            'format': 'bestvideo[height<=2160]+bestaudio/best',  # Download the best video and audio separately
             'outtmpl': output_path + '/%(title)s.%(ext)s',  # Template for output filename
             'merge_output_format': 'mkv',  # Merge into mp4 format
             'postprocessors': [{
