@@ -20,6 +20,7 @@ class YoutubeDownloader:
         self.loader: Optional[BookmarkLoader] = None
         self.bookmarks: List[Bookmark] = []
         self.bookmarks_state: List[tk.BooleanVar] = []
+        self.all_selected = False
         self.root = tk.Tk()
         self.root.title('Youtube Downloader')
 
@@ -250,8 +251,8 @@ class YoutubeDownloader:
         # Create a Button to select all bookmarks
         ttk.Button(
             button_frame,
-            text='Select all',
-            command=self.select_all_bookmarks,
+            text='Select/Unselect all',
+            command=self.select_unselect_all_bookmarks,
         ).grid(row=0, column=0, sticky='w')
 
         # Create a button to download all selected bookmarks as mp3s
@@ -277,14 +278,18 @@ class YoutubeDownloader:
         """
         bookmark.is_selected = is_selected
 
-    def select_all_bookmarks(self):
-        # Set all loaded bookmarks' is_selected to True
-        for b in self.bookmarks:
-            b.is_selected = True
+    def select_unselect_all_bookmarks(self):
+        # Switch the state of the instance all_selected variable
+        self.all_selected = not self.all_selected
 
-        # Set all rendered bookmarks' ttk.Checkbutton variables to True, and check the buttons
+        # Set all loaded bookmarks' is_selected to the state of the instance all_selected variable
+        for b in self.bookmarks:
+            b.is_selected = self.all_selected
+
+        # Set all rendered bookmarks' ttk.Checkbutton variables to the state of the instance all_selected variable,
+        # and check/uncheck the buttons
         for bs in self.bookmarks_state:
-            bs.set(True)
+            bs.set(self.all_selected)
 
     @staticmethod
     def output_message(textbox: tk.Text, message: str):
